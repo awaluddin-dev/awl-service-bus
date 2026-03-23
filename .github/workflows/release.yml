@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         # Server akan menjalankan 2 mesin sekaligus: Ubuntu dan Windows
-        platform: [ubuntu-22.04, windows-latest]
+        platform: [ubuntu-22.04, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.platform }}
     steps:
