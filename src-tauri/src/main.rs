@@ -344,29 +344,57 @@ async fn peek_messages(
 }
 
 #[tauri::command]
-async fn purge_messages(uri: String, topic: String, sub: String) -> Result<String, String> {
+async fn purge_messages(
+    uri: String,
+    topic: String,
+    sub: String,
+    is_dlq: bool,
+) -> Result<u32, String> {
     let mut client = ServiceBusClient::new_from_connection_string(&uri, ServiceBusClientOptions::default())
         .await
         .map_err(|e| e.to_string())?;
 
+    let mut receiver_options = ServiceBusReceiverOptions::default();
+    
+    // --- KUNCI UTAMA PURGE: Gunakan mode ReceiveAndDelete ---
+    receiver_options.receive_mode = azservicebus::ServiceBusReceiveMode::ReceiveAndDelete;
+    
+    if is_dlq {
+        receiver_options.sub_queue = azservicebus::SubQueue::DeadLetter;
+    }
+
     let mut receiver = client
-        .create_receiver_for_subscription(&topic, &sub, ServiceBusReceiverOptions::default())
+        .create_receiver_for_subscription(&topic, &sub, receiver_options)
         .await
         .map_err(|e| e.to_string())?;
 
-    let mut count = 0;
-    // Receive and delete dalam loop sampai habis (atau maksimal 50 untuk keamanan)
-    while let Ok(messages) = receiver.receive_messages(10).await {
-        if messages.is_empty() || count > 50 { break; }
-        for msg in messages {
-            receiver.complete_message(&msg).await.ok();
-            count += 1;
+    let mut total_purged = 0;
+    
+    loop {
+        let fetch_result = tokio::time::timeout(
+            std::time::Duration::from_secs(2),
+            receiver.receive_messages(50)
+        ).await;
+
+        let messages = match fetch_result {
+            Ok(Ok(msgs)) => msgs,
+            Ok(Err(e)) => return Err(e.to_string()),
+            Err(_) => break, // Keluar jika sudah tidak ada pesan
+        };
+
+        if messages.is_empty() {
+            break; 
         }
+
+        // KITA TIDAK PERLU LAGI MEMANGGIL `complete_message`!
+        // Karena mode-nya ReceiveAndDelete, pesan otomatis hancur saat ditarik.
+        total_purged += messages.len() as u32;
     }
 
     receiver.dispose().await.ok();
     client.dispose().await.ok();
-    Ok(format!("Berhasil menghapus {} pesan", count))
+
+    Ok(total_purged)
 }
 
 #[tokio::main]

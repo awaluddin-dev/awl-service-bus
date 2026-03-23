@@ -36,13 +36,14 @@ body {
 }
 
 .sidebar {
-  /* width: 350px; */
+  /* ... (biarkan kode sebelumnya tetap ada) ... */
   background-color: var(--sidebar-color);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  padding: 0px 15px 15px 15px;
+  padding: 15px;
   overflow-y: auto;
+  overflow-x: hidden; /* Pastikan tidak ada scroll horizontal bocor */
 }
 
 .content {
@@ -97,6 +98,10 @@ button:disabled {
   font-weight: bold;
   padding: 12px;
   font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .btn-clear {
@@ -509,4 +514,101 @@ body:has(.status-loading) * {
 .panel-resizer-left:hover,
 .panel-resizer-left.resizing {
   background-color: var(--accent-color);
+}
+
+/* =========================================
+   13. ANIMATIONS
+   ========================================= */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.icon-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* =========================================
+   CONNECT SCREEN (MULTI-CONNECTION)
+   ========================================= */
+.connect-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100vw;
+  background-color: var(--bg-color);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.connect-card {
+  background-color: var(--sidebar-color);
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.connect-card h2 {
+  margin-top: 0;
+  margin-bottom: 25px;
+  font-size: 22px;
+}
+
+/* Hover Effect untuk List Koneksi Tersimpan */
+.saved-connection-item {
+  display: flex;
+  align-items: center;
+  background: #2d2d2d;
+  padding: 12px 15px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+.saved-connection-item:hover {
+  background: #383838;
+  border-color: #007acc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Form Input Focus */
+.connect-card input:focus,
+.connect-card textarea:focus {
+  outline: none;
+  border-color: #007acc !important;
+  box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+}
+
+/* Tombol Connect */
+.btn-connect {
+  background-color: #007acc;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-connect:hover:not(:disabled) {
+  background-color: #006bb3;
+}
+
+.btn-connect:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-connect:disabled {
+  background-color: #444;
+  color: #888;
+  cursor: not-allowed;
 }
