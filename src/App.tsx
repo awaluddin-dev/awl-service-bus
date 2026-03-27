@@ -79,8 +79,7 @@ function App() {
   const [currentPeekTopic, setCurrentPeekTopic] = useState("");
   const fetchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
-
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     const stored = localStorage.getItem("sb_saved_connections");
@@ -640,6 +639,14 @@ function App() {
       triggerAutoPeek(exactValue);
     }
   };
+  const handlePageSizeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      if (fetchTimeout.current) clearTimeout(fetchTimeout.current);
+      // Ambil angka persis yang sedang tertulis di kotak input saat Enter ditekan
+      const exactValue = Number(e.currentTarget.value);
+      setPageSize(exactValue);
+    }
+  };
 
   const renderMessageViewer = () => {
     // PERBAIKAN 2: Kalkulasi ini cukup ditaruh di dalam fungsi render saja
@@ -674,6 +681,23 @@ function App() {
                 value={fetchCount}
                 onChange={(e) => handleFetchCountChange(Number(e.target.value))}
                 onKeyDown={handleFetchKeyDown}
+                className="select-list"
+                min={1}
+                style={{
+                  width: "60px",
+                  background: "#3c3c3c",
+                  color: "white",
+                  border: "1px solid #555",
+                  padding: "4px",
+                  borderRadius: "4px",
+                }}
+              />
+              <label style={{ fontSize: "12px" }}>Page Size:</label>
+              <input
+                type="number"
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+                onKeyDown={handlePageSizeKeyDown}
                 className="select-list"
                 min={1}
                 style={{
